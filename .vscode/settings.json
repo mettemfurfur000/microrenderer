@@ -1,0 +1,14 @@
+{
+	"files.associations": {
+		"sdl_image.h": "c",
+		"sdl.h": "c",
+		"sdl_test_images.h": "c",
+		"json.h": "c",
+		"sdl_hints.h": "c",
+		"stdlib.h": "c",
+		"ctype.h": "c",
+		"types.h": "c",
+		"vec.h": "c",
+		"sdl_ttf.h": "c"
+	}
+}
