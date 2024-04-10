@@ -1,9 +1,4 @@
 #include "config_reader.c"
-#include "render.c"
-
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
 
 const char *font_name = "fonts/Modeseven-L3n5.ttf";
 

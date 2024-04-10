@@ -1,4 +1,6 @@
 #include "hash_table.c"
+#include "config_command_args.c"
+#include "render.c"
 #include "types.h"
 
 char *ptr_to_str(void *ptr)
@@ -154,53 +156,6 @@ int read_config_line(FILE *f, splitted_words *spl_w)
     return SUCCESS;
 }
 
-enum CMD_TYPE
-{
-    CMD_UNKNOWN = 0,  //
-    CMD_EMPTY,        //
-    CMD_END,          // variable control commands
-    CMD_SET,          //
-    CMD_REMOVE,       //
-    CMD_APPEND,       //
-    CMD_INIT_WINDOW,  // sdl2 and rendering related commands
-    CMD_LOAD_IMAGE,   //
-    CMD_SET_COLOR,    //
-    CMD_RENDER_IMAGE, //
-    CMD_RENDER_POINT, //
-    CMD_RENDER_LINE,  //
-    CMD_RENDER_RECT   //
-} CMD_TYPE;
-
-int eval_type_of_command(splitted_words w)
-{
-    if (w.len == 0)
-        return CMD_EMPTY;
-    if (strcmp(w.words[0], "end") == 0)
-        return CMD_END;
-    if (strcmp(w.words[0], "var_set") == 0)
-        return CMD_SET;
-    if (strcmp(w.words[0], "var_rem") == 0)
-        return CMD_REMOVE;
-    if (strcmp(w.words[0], "var_add") == 0)
-        return CMD_APPEND;
-    if (strcmp(w.words[0], "init_window") == 0)
-        return CMD_INIT_WINDOW;
-    if (strcmp(w.words[0], "load_image") == 0)
-        return CMD_LOAD_IMAGE;
-    if (strcmp(w.words[0], "set_color") == 0)
-        return CMD_SET_COLOR;
-    if (strcmp(w.words[0], "render_image") == 0)
-        return CMD_RENDER_IMAGE;
-    if (strcmp(w.words[0], "render_point") == 0)
-        return CMD_RENDER_POINT;
-    if (strcmp(w.words[0], "render_line") == 0)
-        return CMD_RENDER_LINE;
-    if (strcmp(w.words[0], "render_rect") == 0)
-        return CMD_RENDER_RECT;
-
-    return CMD_UNKNOWN;
-}
-
 int parse_config(char *filename)
 {
     FILE *f = fopen(filename, "r");
@@ -228,6 +183,22 @@ int parse_config(char *filename)
 
     splitted_words command = {0, 0};
 
+    cmd_syntax syntax_arr[] = {
+        {"empty", 0, 0},
+        {"end", 0, 0},
+        {"var_set", 2, {STRING, STRING}},
+        {"var_rem", 1, {STRING}},
+        {"var_add", 2, {STRING, STRING}},
+        {"init_window", 3, {STRING, INT, INT}},
+        {"load_image", 2, {STRING, STRING}},
+        {"set_color", 3, {INT, INT, INT}},
+        {"render_image", 3, {STRING, INT, INT}},
+        {"render_point", 2, {INT, INT}},
+        {"render_line", 4, {INT, INT, INT, INT}},
+        {"render_rect", 4, {INT, INT, INT, INT}}
+
+    };
+
     char *out_filename = 0;
 
     int width, height;
@@ -235,12 +206,19 @@ int parse_config(char *filename)
     int parse_more = 1;
     int current_line = 0;
     int initialized = 0;
+
     while (parse_more)
     {
         if (!read_config_line(f, &command))
             break;
 
-        switch (eval_type_of_command(command))
+        int cmd_type = eval_type_of_command(command);
+        int syntax_is_bad = check_command_syntax(command, syntax_arr[cmd_type + 1]);
+
+        if (syntax_is_bad)
+            continue;
+
+        switch (cmd_type)
         {
         case CMD_END:
             parse_more = 0;
@@ -281,8 +259,14 @@ int parse_config(char *filename)
             width = atoi(command.words[2]);
             height = atoi(command.words[3]);
             init_all(width, height);
+            SDL_RenderClear(renderer);
             initialized = 1;
             break;
+        case CMD_SET_COLOR:
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+            break;
+        case CMD_RENDER_POINT:
+            SDL_RenderDrawPoint(renderer, atoi(command.words[1]), atoi(command.words[2]));
         default:
             // Handle unrecognized command
             fprintf(stderr, "Unrecognized command:\n");
@@ -294,10 +278,22 @@ int parse_config(char *filename)
 
         if (!initialized)
         {
-            fprintf(stderr, "Window wasnt initialized, please specify window sizes with this command on your first line:\n\tinit_window <out_filename> <width> <height>\n");
+            fprintf(stderr, "Window wasnt initialized, please specify window sizes with this command on your first line:\n\tinit_window <out_filename.png> <width> <height>\n");
             break;
         }
     }
+
+    // Write results to a file
+    SDL_Surface *surface;
+
+    if (!(surface = SDL_CreateRGBSurface(0, width, height, DEPTH, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff)))
+    {
+        printf("SDL_CreateRGBSurface: %s\n", SDL_GetError());
+        exit(1);
+    }
+    SDL_RenderReadPixels(renderer, 0, SDL_PIXELFORMAT_RGBA8888, surface->pixels, BYTES_PER_PIXEL * width);
+    IMG_SavePNG(surface, out_filename); // Output buffer
+    SDL_FreeSurface(surface);
 
     if (initialized)
         exit_all();

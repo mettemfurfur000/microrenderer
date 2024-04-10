@@ -1,8 +1,8 @@
-# CFLAGS += -IC:/msys64/mingw64/include/SDL2 -Dmain=SDL_main -lmingw32 -lws2_32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lm
+CFLAGS += -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lm
 
 all: clean vec
-	gcc -c config_reader.c -o obj/config_reader.o -g -Wall
-	gcc obj/vec.o obj/config_reader.o -o app -g -Wall
+	gcc -c main.c -o obj/main.o -g -Wall 
+	gcc obj/vec.o obj/main.o -o app -g -Wall $(CFLAGS)
 
 .PHONY: clean
 clean:
