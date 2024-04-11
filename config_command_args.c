@@ -1,5 +1,6 @@
 #include "hash_table.c"
 #include "types.h"
+#include <stdarg.h>
 
 enum ARG_TYPE
 {
@@ -11,18 +12,20 @@ enum ARG_TYPE
 typedef struct cmd_syntax
 {
     char *name;
+    int internal_id;
     int min_args;
     int *argtypes;
 } cmd_syntax;
 
 enum CMD_TYPE
 {
-    CMD_UNKNOWN = 0,  //
+    CMD_UNKNOWN = -1, //
     CMD_EMPTY,        //
     CMD_END,          // variable control commands
     CMD_SET,          //
     CMD_REMOVE,       //
     CMD_APPEND,       //
+    CMD_PRINT_VARS,   //
     CMD_INIT_WINDOW,  // sdl2 and rendering related commands
     CMD_LOAD_IMAGE,   //
     CMD_SET_COLOR,    //
@@ -38,6 +41,7 @@ int determine_type(char *str)
     int characters = 0;
     int dots = 0;
     int symbols = 0;
+    int spaces = 0;
     int len = strlen(str);
 
     for (int i = 0; i < len; i++)
@@ -51,9 +55,11 @@ int determine_type(char *str)
             dots++;
         if (ispunct(c))
             symbols++;
+        if (isspace(c))
+            spaces++;
     }
 
-    if (characters > 0 || symbols > 0)
+    if (characters > 0 || symbols > 0 || spaces > 0)
         return STRING;
     if (dots == 0 && numbers > 0)
         return INT;
@@ -62,7 +68,7 @@ int determine_type(char *str)
     return STRING;
 }
 
-int check_command_syntax(splitted_words w, cmd_syntax syntax)
+int is_syntax_good(splitted_words w, cmd_syntax syntax)
 {
     if (w.len < syntax.min_args + 1)
     {
@@ -73,7 +79,8 @@ int check_command_syntax(splitted_words w, cmd_syntax syntax)
     for (int i = 0; i < syntax.min_args; i++)
     {
         int req_type = syntax.argtypes[i];
-        if (determine_type(w.words[i + 1]) != req_type)
+
+        if (req_type != STRING && determine_type(w.words[i + 1]) != req_type)
         {
             fprintf(stderr, "Syntax error: wrong type, argument #%d must be %s\n", i + 1,
                     req_type ? req_type == 1 ? "\"int\"" : "\"float\"" : "\"string\"");
@@ -84,34 +91,33 @@ int check_command_syntax(splitted_words w, cmd_syntax syntax)
     return SUCCESS;
 }
 
-int eval_type_of_command(splitted_words w)
+int eval_id_of_command(splitted_words w, cmd_syntax *syntax_arr, int total_commands)
 {
     if (w.len == 0)
         return CMD_EMPTY;
-    if (strcmp(w.words[0], "end") == 0)
-        return CMD_END;
-    if (strcmp(w.words[0], "var_set") == 0)
-        return CMD_SET;
-    if (strcmp(w.words[0], "var_rem") == 0)
-        return CMD_REMOVE;
-    if (strcmp(w.words[0], "var_add") == 0)
-        return CMD_APPEND;
-    if (strcmp(w.words[0], "init_window") == 0)
-        return CMD_INIT_WINDOW;
-    if (strcmp(w.words[0], "load_image") == 0)
-        return CMD_LOAD_IMAGE;
-    if (strcmp(w.words[0], "set_color") == 0)
-        return CMD_SET_COLOR;
-    if (strcmp(w.words[0], "render_image") == 0)
-        return CMD_RENDER_IMAGE;
-    if (strcmp(w.words[0], "render_point") == 0)
-        return CMD_RENDER_POINT;
-    if (strcmp(w.words[0], "render_line") == 0)
-        return CMD_RENDER_LINE;
-    if (strcmp(w.words[0], "render_rect") == 0)
-        return CMD_RENDER_RECT;
+    for (int i = 0; i < total_commands; i++)
+        if (strcmp(w.words[0], syntax_arr[i].name) == 0)
+            return syntax_arr[i].internal_id;
 
     return CMD_UNKNOWN;
+}
+
+cmd_syntax make_new_entry(char *name, int id, int min_args, ...)
+{
+    va_list valist;
+    cmd_syntax cs;
+    va_start(valist, min_args);
+
+    cs.internal_id = id;
+    cs.name = name;
+    cs.min_args = min_args;
+    cs.argtypes = calloc(min_args, sizeof(int));
+
+    for (int i = 0; i < min_args; i++)
+        cs.argtypes[i] = va_arg(valist, int);
+
+    va_end(valist);
+    return cs;
 }
 
 // int test()

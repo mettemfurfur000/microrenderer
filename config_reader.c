@@ -162,7 +162,7 @@ int parse_config(char *filename)
     if (!f)
     {
         perror("Error opening file");
-        return FAIL;
+        return -1;
     }
 
     hash_table **vars = alloc_table();
@@ -170,7 +170,7 @@ int parse_config(char *filename)
     {
         fclose(f);
         perror("Error allocating memory for vars");
-        return FAIL;
+        return -1;
     }
 
     hash_table **resources = alloc_table();
@@ -178,47 +178,61 @@ int parse_config(char *filename)
     {
         fclose(f);
         perror("Error allocating memory for resources");
-        return FAIL;
+        return -1;
     }
 
     splitted_words command = {0, 0};
 
-    cmd_syntax syntax_arr[] = {
-        {"empty", 0, 0},
-        {"end", 0, 0},
-        {"var_set", 2, {STRING, STRING}},
-        {"var_rem", 1, {STRING}},
-        {"var_add", 2, {STRING, STRING}},
-        {"init_window", 3, {STRING, INT, INT}},
-        {"load_image", 2, {STRING, STRING}},
-        {"set_color", 3, {INT, INT, INT}},
-        {"render_image", 3, {STRING, INT, INT}},
-        {"render_point", 2, {INT, INT}},
-        {"render_line", 4, {INT, INT, INT, INT}},
-        {"render_rect", 4, {INT, INT, INT, INT}}
+    const int total_commands = 13;
 
-    };
+    cmd_syntax syntax_arr[total_commands];
+
+    syntax_arr[CMD_EMPTY] = make_new_entry("empty", CMD_EMPTY, 0);
+    syntax_arr[CMD_END] = make_new_entry("end", CMD_END, 0);
+    syntax_arr[CMD_SET] = make_new_entry("set", CMD_SET, 2, STRING, STRING);
+    syntax_arr[CMD_REMOVE] = make_new_entry("rem", CMD_REMOVE, 1, STRING);
+    syntax_arr[CMD_APPEND] = make_new_entry("append", CMD_APPEND, 2, STRING, STRING);
+    syntax_arr[CMD_PRINT_VARS] = make_new_entry("print_vars", CMD_PRINT_VARS, 0);
+    syntax_arr[CMD_INIT_WINDOW] = make_new_entry("init_window", CMD_INIT_WINDOW, 3, STRING, INT, INT);
+    syntax_arr[CMD_LOAD_IMAGE] = make_new_entry("load_image", CMD_LOAD_IMAGE, 1, STRING);
+    syntax_arr[CMD_SET_COLOR] = make_new_entry("set_color", CMD_SET_COLOR, 4, INT, INT, INT, INT);
+    syntax_arr[CMD_RENDER_IMAGE] = make_new_entry("render_image", CMD_RENDER_IMAGE, 5, STRING, INT, INT, INT, INT);
+    syntax_arr[CMD_RENDER_POINT] = make_new_entry("render_point", CMD_RENDER_POINT, 2, INT, INT);
+    syntax_arr[CMD_RENDER_LINE] = make_new_entry("render_line", CMD_RENDER_LINE, 4, INT, INT, INT, INT);
+    syntax_arr[CMD_RENDER_RECT] = make_new_entry("render_rect", CMD_RENDER_RECT, 4, INT, INT, INT, INT);
 
     char *out_filename = 0;
 
     int width, height;
 
     int parse_more = 1;
-    int current_line = 0;
     int initialized = 0;
 
-    while (parse_more)
+    for (int current_line = 0; parse_more == 1; current_line++)
     {
         if (!read_config_line(f, &command))
             break;
 
-        int cmd_type = eval_type_of_command(command);
-        int syntax_is_bad = check_command_syntax(command, syntax_arr[cmd_type + 1]);
+        int cmd_id = eval_id_of_command(command, syntax_arr, total_commands);
 
-        if (syntax_is_bad)
+        if (cmd_id == CMD_UNKNOWN)
+        {
+            fprintf(stderr, "Unknown command on line %d: ", current_line);
+            print_words(command);
+            continue;
+        }
+
+        if (cmd_id == CMD_EMPTY)
             continue;
 
-        switch (cmd_type)
+        if (!is_syntax_good(command, syntax_arr[cmd_id]))
+        {
+            fprintf(stderr, "Syntax error on line %d: ", current_line);
+            print_words(command);
+            continue;
+        }
+
+        switch (cmd_id)
         {
         case CMD_END:
             parse_more = 0;
@@ -251,6 +265,9 @@ int parse_config(char *filename)
             put_entry(vars, command.words[1], new_value);
             free(new_value); // Remember to free the allocated memory
             break;
+        case CMD_PRINT_VARS:
+            print_table(vars);
+            break;
         case CMD_INIT_WINDOW:
             if (initialized)
                 break;
@@ -263,23 +280,31 @@ int parse_config(char *filename)
             initialized = 1;
             break;
         case CMD_SET_COLOR:
-            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+            SDL_SetRenderDrawColor(renderer, atoi(command.words[1]), atoi(command.words[2]), atoi(command.words[3]), atoi(command.words[4]));
             break;
         case CMD_RENDER_POINT:
             SDL_RenderDrawPoint(renderer, atoi(command.words[1]), atoi(command.words[2]));
+            break;
+        case CMD_RENDER_LINE:
+            SDL_RenderDrawLine(renderer, atoi(command.words[1]), atoi(command.words[2]), atoi(command.words[3]), atoi(command.words[4]));
+            break;
+        case CMD_LOAD_IMAGE:
+            char *tmp = ptr_to_str(IMG_LoadTexture(renderer, command.words[1]));
+            put_entry(resources, command.words[1], tmp);
+            free(tmp);
+            break;
+        case CMD_RENDER_IMAGE:
+            SDL_Rect dest = {atoi(command.words[2]), atoi(command.words[3]), atoi(command.words[4]), atoi(command.words[5])};
+            SDL_RenderCopy(renderer, str_to_ptr(get_entry(resources, command.words[1])), 0, &dest);
+            break;
         default:
-            // Handle unrecognized command
-            fprintf(stderr, "Unrecognized command:\n");
-            print_words(command);
             break;
         }
-
-        current_line++;
 
         if (!initialized)
         {
             fprintf(stderr, "Window wasnt initialized, please specify window sizes with this command on your first line:\n\tinit_window <out_filename.png> <width> <height>\n");
-            break;
+            return -1;
         }
     }
 
@@ -303,5 +328,5 @@ int parse_config(char *filename)
     free_table(resources);
     fclose(f);
 
-    return SUCCESS;
+    return 0;
 }
