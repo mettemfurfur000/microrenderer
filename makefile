@@ -6,7 +6,7 @@ objects := $(patsubst %.c,obj/%.o,$(sources))
 headers := $(shell cd src/headers;echo *.h)
 executable := app
 
-all: vec $(executable) 
+all: $(executable) 
 
 # src/headers/%.h
 
