@@ -6,7 +6,7 @@ objects := $(patsubst %.c,obj/%.o,$(sources))
 headers := $(shell cd src/headers;echo *.h)
 executable := app
 
-all: make_folders $(executable) 
+all: make_folders $(executable)
 
 # src/headers/%.h
 
@@ -29,6 +29,7 @@ test:
 	(cd build;./app test.cfg)
 
 .PHONY: make_folders
+make_folders:
 	mkdir -p obj
 	mkdir -p build
 
