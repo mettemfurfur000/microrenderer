@@ -1,20 +1,4 @@
-#ifndef HASH_TABLE
-#define HASH_TABLE
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include "types.h"
-
-#define TABLE_SIZE 113
-
-typedef struct hash_table
-{
-	char *key;
-	char *value;
-	struct hash_table *next;
-} hash_table;
+#include "headers/hash_table.h"
 
 unsigned long hash_function(char *key)
 {
@@ -202,5 +186,3 @@ int actual_size_of_table(hash_table **table)
 	}
 	return size;
 }
-
-#endif

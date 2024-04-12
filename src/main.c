@@ -1,6 +1,4 @@
-#include "config_reader.c"
-
-const char *font_name = "fonts/Modeseven-L3n5.ttf";
+#include "headers/script_parser.h"
 
 int main(int argc, char *argv[])
 {
@@ -11,11 +9,12 @@ int main(int argc, char *argv[])
 	}
 
 	parse_config(argv[1]);
+
 	return 0;
 }
 
 /*
-
+const char *font_name = "fonts/Modeseven-L3n5.ttf";
 	SDL_Point const global_center = {WIDTH / 2, HEIGHT / 2};
 	SDL_Rect rect = {WIDTH / 4, HEIGHT / 4, WIDTH / 2, HEIGHT / 2};
 

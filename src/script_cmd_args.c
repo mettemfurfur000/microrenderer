@@ -1,40 +1,4 @@
-#include "hash_table.c"
-#include "types.h"
-#include <stdarg.h>
-
-enum ARG_TYPE
-{
-    STRING = 0,
-    INT,
-    FLOAT
-} ARG_TYPE;
-
-typedef struct cmd_syntax
-{
-    char *name;
-    char *args_expl;
-    int internal_id;
-    int min_args;
-    int *argtypes;
-} cmd_syntax;
-
-enum CMD_TYPE
-{
-    CMD_UNKNOWN = -1, //
-    CMD_EMPTY,        //
-    CMD_END,          // variable control commands
-    CMD_SET,          //
-    CMD_REMOVE,       //
-    CMD_APPEND,       //
-    CMD_PRINT_VARS,   //
-    CMD_INIT_WINDOW,  // sdl2 and rendering related commands
-    CMD_LOAD_IMAGE,   //
-    CMD_SET_COLOR,    //
-    CMD_RENDER_IMAGE, //
-    CMD_RENDER_POINT, //
-    CMD_RENDER_LINE,  //
-    CMD_RENDER_RECT   //
-} CMD_TYPE;
+#include "headers/script_cmd_args.h"
 
 int determine_type(char *str)
 {
@@ -97,12 +61,12 @@ int is_syntax_good(splitted_words w, cmd_syntax syntax)
 int eval_id_of_command(splitted_words w, cmd_syntax *syntax_arr, int total_commands)
 {
     if (w.len == 0)
-        return CMD_EMPTY;
+        return 0;
     for (int i = 0; i < total_commands; i++)
         if (strcmp(w.words[0], syntax_arr[i].name) == 0)
             return syntax_arr[i].internal_id;
 
-    return CMD_UNKNOWN;
+    return -1;
 }
 
 cmd_syntax make_new_entry(char *name, char *expl, int id, int min_args, ...)
