@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
 	parse_config(argv[1]);
 	return 0;
 }
+
 /*
 
 	SDL_Point const global_center = {WIDTH / 2, HEIGHT / 2};

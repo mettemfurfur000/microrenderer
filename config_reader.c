@@ -187,19 +187,19 @@ int parse_config(char *filename)
 
     cmd_syntax syntax_arr[total_commands];
 
-    syntax_arr[CMD_EMPTY] = make_new_entry("empty", CMD_EMPTY, 0);
-    syntax_arr[CMD_END] = make_new_entry("end", CMD_END, 0);
-    syntax_arr[CMD_SET] = make_new_entry("set", CMD_SET, 2, STRING, STRING);
-    syntax_arr[CMD_REMOVE] = make_new_entry("rem", CMD_REMOVE, 1, STRING);
-    syntax_arr[CMD_APPEND] = make_new_entry("append", CMD_APPEND, 2, STRING, STRING);
-    syntax_arr[CMD_PRINT_VARS] = make_new_entry("print_vars", CMD_PRINT_VARS, 0);
-    syntax_arr[CMD_INIT_WINDOW] = make_new_entry("init_window", CMD_INIT_WINDOW, 3, STRING, INT, INT);
-    syntax_arr[CMD_LOAD_IMAGE] = make_new_entry("load_image", CMD_LOAD_IMAGE, 1, STRING);
-    syntax_arr[CMD_SET_COLOR] = make_new_entry("set_color", CMD_SET_COLOR, 4, INT, INT, INT, INT);
-    syntax_arr[CMD_RENDER_IMAGE] = make_new_entry("render_image", CMD_RENDER_IMAGE, 5, STRING, INT, INT, INT, INT);
-    syntax_arr[CMD_RENDER_POINT] = make_new_entry("render_point", CMD_RENDER_POINT, 2, INT, INT);
-    syntax_arr[CMD_RENDER_LINE] = make_new_entry("render_line", CMD_RENDER_LINE, 4, INT, INT, INT, INT);
-    syntax_arr[CMD_RENDER_RECT] = make_new_entry("render_rect", CMD_RENDER_RECT, 4, INT, INT, INT, INT);
+    syntax_arr[CMD_EMPTY] = make_new_entry("empty", "empty line idk", CMD_EMPTY, 0);
+    syntax_arr[CMD_END] = make_new_entry("end", "end command to end the script i guess", CMD_END, 0);
+    syntax_arr[CMD_SET] = make_new_entry("set", "sets a value for internal variable, first arg for variable name and second for its value", CMD_SET, 2, STRING, STRING);
+    syntax_arr[CMD_REMOVE] = make_new_entry("rem", "removes a variabl", CMD_REMOVE, 1, STRING);
+    syntax_arr[CMD_APPEND] = make_new_entry("append", "may concatenate a string to a variable", CMD_APPEND, 2, STRING, STRING);
+    syntax_arr[CMD_PRINT_VARS] = make_new_entry("print_vars", "prints current variables", CMD_PRINT_VARS, 0);
+    syntax_arr[CMD_INIT_WINDOW] = make_new_entry("init_window", "grrrr", CMD_INIT_WINDOW, 3, STRING, INT, INT);
+    syntax_arr[CMD_LOAD_IMAGE] = make_new_entry("load_image", "loads image from your disk, single argument", CMD_LOAD_IMAGE, 1, STRING);
+    syntax_arr[CMD_SET_COLOR] = make_new_entry("set_color", "select a color for render_point, render_line and so, 4 numbers for RGBA", CMD_SET_COLOR, 4, INT, INT, INT, INT);
+    syntax_arr[CMD_RENDER_IMAGE] = make_new_entry("render_image", "copies an imeg to specified coordinates on ascreen, 1st arg as a name of file and other 4 for xy coordinates and width&height", CMD_RENDER_IMAGE, 5, STRING, INT, INT, INT, INT);
+    syntax_arr[CMD_RENDER_POINT] = make_new_entry("render_point", "rendrs point on xy coordinates", CMD_RENDER_POINT, 2, INT, INT);
+    syntax_arr[CMD_RENDER_LINE] = make_new_entry("render_line", "renders a line between 2 points", CMD_RENDER_LINE, 4, INT, INT, INT, INT);
+    syntax_arr[CMD_RENDER_RECT] = make_new_entry("render_rect", "rneders rect betwen 2 points", CMD_RENDER_RECT, 4, INT, INT, INT, INT);
 
     char *out_filename = 0;
 

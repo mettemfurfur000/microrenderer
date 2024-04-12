@@ -12,6 +12,7 @@ enum ARG_TYPE
 typedef struct cmd_syntax
 {
     char *name;
+    char *args_expl;
     int internal_id;
     int min_args;
     int *argtypes;
@@ -73,6 +74,7 @@ int is_syntax_good(splitted_words w, cmd_syntax syntax)
     if (w.len < syntax.min_args + 1)
     {
         fprintf(stderr, "Syntax error: not enough arguments, %s requires at least %d\n", syntax.name, syntax.min_args);
+        fprintf(stderr, "Command syntax details: %s\n", syntax.args_expl);
         return FAIL;
     }
 
@@ -84,6 +86,7 @@ int is_syntax_good(splitted_words w, cmd_syntax syntax)
         {
             fprintf(stderr, "Syntax error: wrong type, argument #%d must be %s\n", i + 1,
                     req_type ? req_type == 1 ? "\"int\"" : "\"float\"" : "\"string\"");
+            fprintf(stderr, "Command syntax details: %s\n", syntax.args_expl);
             return FAIL;
         }
     }
@@ -102,7 +105,7 @@ int eval_id_of_command(splitted_words w, cmd_syntax *syntax_arr, int total_comma
     return CMD_UNKNOWN;
 }
 
-cmd_syntax make_new_entry(char *name, int id, int min_args, ...)
+cmd_syntax make_new_entry(char *name, char *expl, int id, int min_args, ...)
 {
     va_list valist;
     cmd_syntax cs;
@@ -110,6 +113,7 @@ cmd_syntax make_new_entry(char *name, int id, int min_args, ...)
 
     cs.internal_id = id;
     cs.name = name;
+    cs.args_expl = expl;
     cs.min_args = min_args;
     cs.argtypes = calloc(min_args, sizeof(int));
 
@@ -119,9 +123,3 @@ cmd_syntax make_new_entry(char *name, int id, int min_args, ...)
     va_end(valist);
     return cs;
 }
-
-// int test()
-// { you can just allocate things on a stack maybe huh...
-//     cmd_syntax syntaxes[] = {
-//         {"test_cmd", 2, {1, 1}, 2}};
-// }
