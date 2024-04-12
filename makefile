@@ -23,11 +23,15 @@ obj/main.o: src/main.c
 $(executable): $(objects)
 	gcc $(CFLAGS) -o build/$@ $^ $(LDFLAGS)
 	cp -r example_files/* build
-	(cd build;./app test.cfg)
+	
 
 clean:
 	rm -rf obj/*
 	rm -rf build/*
+
+.PHONY: test
+test:
+	(cd build;./app test.cfg)
 
 #	gcc main.c -o main -lSDL2 -Wall -lSDL2_image -lSDL2_ttf
 #	./main
