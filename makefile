@@ -6,7 +6,7 @@ objects := $(patsubst %.c,obj/%.o,$(sources))
 headers := $(shell cd src/headers;echo *.h)
 executable := app
 
-all: $(executable) 
+all: make_folders $(executable) 
 
 # src/headers/%.h
 
@@ -27,6 +27,10 @@ clean:
 .PHONY: test
 test:
 	(cd build;./app test.cfg)
+
+.PHONY: make_folders
+	mkdir -p obj
+	mkdir -p build
 
 #	gcc main.c -o main -lSDL2 -Wall -lSDL2_image -lSDL2_ttf
 #	./main
