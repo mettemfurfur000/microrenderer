@@ -13,10 +13,6 @@ all: vec $(executable)
 obj/%.o : src/%.c
 	gcc $(CFLAGS) -c $^ -o $@
 
-.PHONY: vec
-vec:
-	gcc -o obj/vec.o -c vec/src/vec.c -Ivec/src -g
-
 obj/main.o: src/main.c
 	gcc $(CFLAGS) -c $^ -o $@
 
@@ -24,7 +20,6 @@ $(executable): $(objects)
 	gcc $(CFLAGS) -o build/$@ $^ $(LDFLAGS)
 	cp -r example_files/* build
 	
-
 clean:
 	rm -rf obj/*
 	rm -rf build/*
