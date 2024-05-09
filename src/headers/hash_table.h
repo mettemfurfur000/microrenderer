@@ -17,6 +17,7 @@ void free_table(hash_table **table);
 void put_entry(hash_table **table, char *key, char *value);
 char *get_entry(hash_table **table, char *key);
 int remove_entry(hash_table **table, char *key);
+char *eject_entry(hash_table **table, char *key);
 
 void print_table(hash_table **table);
 

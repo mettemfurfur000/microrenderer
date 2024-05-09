@@ -9,6 +9,9 @@ int determine_type(char *str)
     int spaces = 0;
     int len = strlen(str);
 
+    if (len > 4 && str[0] == '0' && str[1] == 'x') // pointer type
+        return POINTER;
+
     for (int i = 0; i < len; i++)
     {
         char c = str[i];
@@ -48,9 +51,29 @@ int is_syntax_good(splitted_words w, cmd_syntax syntax)
 
         if (req_type != STRING && determine_type(w.words[i + 1]) != req_type)
         {
-            fprintf(stderr, "Syntax error: wrong type, argument #%d must be %s\n", i + 1,
-                    req_type ? req_type == 1 ? "\"int\"" : "\"float\"" : "\"string\"");
-            fprintf(stderr, "Command syntax details: %s\n", syntax.args_expl);
+            const char *needed_type_str_ptr = 0;
+            switch (req_type)
+            {
+            case STRING:
+                needed_type_str_ptr = "STRING";
+                break;
+            case INT:
+                needed_type_str_ptr = "INT";
+                break;
+            case FLOAT:
+                needed_type_str_ptr = "FLOAT";
+                break;
+            case POINTER:
+                needed_type_str_ptr = "POINTER";
+                break;
+            default:
+                needed_type_str_ptr = "UNDEFINED";
+                break;
+            }
+
+            fprintf(stderr, "Syntax error: wrong type, argument #%d must be %s\n", i + 1, needed_type_str_ptr);
+            fprintf(stderr, "       %s\n", syntax.args_expl);
+
             return FAIL;
         }
     }
@@ -69,7 +92,7 @@ int eval_id_of_command(splitted_words w, cmd_syntax *syntax_arr, int total_comma
     return -1;
 }
 
-cmd_syntax make_new_entry(char *name, char *expl, int id, int min_args, ...)
+cmd_syntax make_new_entry(char *name, char *expl, cmd_func *function, int id, int min_args, ...)
 {
     va_list valist;
     cmd_syntax cs;
@@ -80,6 +103,7 @@ cmd_syntax make_new_entry(char *name, char *expl, int id, int min_args, ...)
     cs.args_expl = expl;
     cs.min_args = min_args;
     cs.argtypes = calloc(min_args, sizeof(int));
+    cs.function = function;
 
     for (int i = 0; i < min_args; i++)
         cs.argtypes[i] = va_arg(valist, int);
