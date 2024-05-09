@@ -19,7 +19,6 @@ obj/main.o: src/main.c
 $(executable): $(objects)
 	gcc $(CFLAGS) -o build/$@ $^ $(LDFLAGS)
 	cp -r example_files/* build
-	cd build && ./app test.cfg
 	
 clean:
 	rm -rf obj/*
