@@ -130,7 +130,7 @@ void print_table(hash_table **table)
 {
 	hash_table *node;
 	hash_table *next_node;
-	printf("table content:\n");
+
 	for (int i = 0; i < TABLE_SIZE; ++i)
 	{
 		node = table[i];
@@ -166,6 +166,24 @@ int remove_entry(hash_table **table, char *key)
 	free_node(node);
 
 	return SUCCESS;
+}
+
+char *eject_entry(hash_table **table, char *key)
+{
+	static char *internal_buffer = 0;
+
+	char *value = get_entry(table, key);
+	if (!value)
+		return FAIL;
+
+	if (internal_buffer)
+		free(internal_buffer);
+	internal_buffer = malloc(strlen(value) + 1);
+
+	strcpy(internal_buffer, value);
+	remove_entry(table, key);
+
+	return internal_buffer;
 }
 
 int actual_size_of_table(hash_table **table)

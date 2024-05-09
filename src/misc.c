@@ -2,14 +2,16 @@
 
 char *ptr_to_str(void *ptr)
 {
-    uintptr_t address = (uintptr_t)ptr;
-    char *str = (char *)malloc(sizeof(char) * 20);
-    sprintf(str, "%p", (void *)address);
-    return str;
+    static char internal_buffer[32];
+
+    sprintf(internal_buffer, "%p", (void *)ptr);
+    return internal_buffer;
 }
 
 void *str_to_ptr(const char *str)
 {
+    if (!str)
+        return 0;
     uintptr_t address;
     sscanf(str, "%p", (void **)&address);
     void *ptr = (void *)address;
