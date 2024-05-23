@@ -17,6 +17,7 @@ int cmd_make_sdl_object(splitted_words command, hash_table **vars, hash_table **
 
 int cmd_set_color(splitted_words command, hash_table **vars, hash_table **resources);
 int cmd_load_image(splitted_words command, hash_table **vars, hash_table **resources);
+int cmd_crop_image(splitted_words command, hash_table **vars, hash_table **resources);
 
 int cmd_render_image(splitted_words command, hash_table **vars, hash_table **resources);
 int cmd_render_point(splitted_words command, hash_table **vars, hash_table **resources);

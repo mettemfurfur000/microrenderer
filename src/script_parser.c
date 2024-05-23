@@ -18,11 +18,18 @@ int read_config_line(FILE *f, splitted_words *spl_w)
     char buffer[512] = {0};
 
     if (spl_w->words != 0)
-        words_free(*spl_w);
+        words_free(spl_w);
 
     if (fgets(buffer, sizeof(buffer), f))
     {
+        if (isnewline(*buffer))
+        {
+            spl_w->len = 0;
+            return SUCCESS;
+        }
+
         int words = count_spaces(buffer) + 1;
+        spl_w->len = words;
 
         *spl_w = words_alloc(words);
 
@@ -33,8 +40,6 @@ int read_config_line(FILE *f, splitted_words *spl_w)
             strcpy(spl_w->words[i], token);
             token = strtok_wq(0);
         }
-
-        spl_w->len = words;
     }
 
     if (feof(f))
@@ -82,6 +87,7 @@ int parse_config(char *filename)
         CMD_INIT_WINDOW,  // sdl2 rendering related commands
         CMD_MAKE_SDL_OBJECT,
         CMD_LOAD_IMAGE,   //
+        CMD_CROP_IMAGE,   //
         CMD_SET_COLOR,    //
         CMD_RENDER_IMAGE, //
         CMD_RENDER_POINT, //
@@ -105,6 +111,8 @@ int parse_config(char *filename)
 
     syntax_arr[CMD_INIT_WINDOW] = make_new_entry("init_window", "filename, width and height", cmd_init_window, CMD_INIT_WINDOW, 3, STRING, INT, INT);
     syntax_arr[CMD_LOAD_IMAGE] = make_new_entry("load_image", "loads image from your disk", cmd_load_image, CMD_LOAD_IMAGE, 1, STRING);
+    syntax_arr[CMD_CROP_IMAGE] = make_new_entry("crop_image", "crops image and creates new one - <name> <rect_name> <output_surface_name>", cmd_crop_image, CMD_CROP_IMAGE, 3, STRING, STRING, STRING);
+
     syntax_arr[CMD_SET_COLOR] = make_new_entry("set_color", "select a color from sdl_color object\n", cmd_set_color, CMD_SET_COLOR, 1, STRING);
     syntax_arr[CMD_RENDER_IMAGE] = make_new_entry("render_image", "copies an imeg to specified coordinates on ascreen\n\tname, src_rect, dest_rect", cmd_render_image, CMD_RENDER_IMAGE, 3, STRING, STRING, STRING);
 

@@ -22,15 +22,16 @@ splitted_words words_alloc(int len)
 {
     splitted_words g;
     g.words = (char **)malloc(len * sizeof(void *));
+    g.len = len;
     return g;
 }
 
-void words_free(splitted_words spl_w)
+void words_free(splitted_words *spl_w)
 {
-    for (int i = 0; i < spl_w.len; i++)
-        free(spl_w.words[i]);
-    free(spl_w.words);
-    spl_w.words = 0;
+    for (int i = 0; i < spl_w->len; i++)
+        free(spl_w->words[i]);
+    free(spl_w->words);
+    spl_w->words = 0;
 }
 
 void print_words(splitted_words spl_w)
@@ -42,15 +43,9 @@ void print_words(splitted_words spl_w)
 
 int isnewline(int c)
 {
-    switch (c)
-    {
-    case '\n':
+    if (c == '\r' || c == '\n')
         return 1;
-    case '\r':
-        return 1;
-    default:
-        return 0;
-    }
+    return 0;
 }
 
 int count_spaces(char *str)
@@ -78,9 +73,6 @@ int count_spaces(char *str)
 
         while (isspace(*str))
             str++;
-
-        if (isnewline(*str))
-            spaces--;
     }
     return spaces;
 }

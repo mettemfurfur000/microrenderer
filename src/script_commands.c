@@ -51,6 +51,14 @@ int det_sdl_type(char *word)
 
 #define make_heap_object(type, name) type *name = malloc(sizeof(type))
 
+#define get_safely(table, func_name, number, type, obj_name)                                  \
+    type *obj_name = str_to_ptr(get_entry(table, command.words[number]));                     \
+    if (!obj_name)                                                                            \
+    {                                                                                         \
+        fprintf(stderr, #func_name " error: no such " #type ": %s\n", command.words[number]); \
+        return FAIL;                                                                          \
+    }
+
 // basicly word[0] is aways a command name and should be ignored
 
 int cmd_empty(splitted_words command, hash_table **vars, hash_table **resources)
@@ -214,14 +222,34 @@ int cmd_load_image(splitted_words command, hash_table **vars, hash_table **resou
         fprintf(stderr, "cmd_load_image error: no such file %s\n", command.words[1]);
         return FAIL;
     }
+
     put_entry(resources, command.words[1], ptr_to_str(surf));
+    return SUCCESS;
+}
+
+SDL_Surface *crop_surface(SDL_Surface *sprite_sheet, SDL_Rect rect)
+{
+    SDL_Surface *surface = SDL_CreateRGBSurface(sprite_sheet->flags, rect.w, rect.h, sprite_sheet->format->BitsPerPixel, sprite_sheet->format->Rmask, sprite_sheet->format->Gmask, sprite_sheet->format->Bmask, sprite_sheet->format->Amask);
+    SDL_BlitSurface(sprite_sheet, &rect, surface, 0);
+    return surface;
+}
+
+int cmd_crop_image(splitted_words command, hash_table **vars, hash_table **resources)
+{
+    get_safely(resources, cmd_crop_image, 1, SDL_Surface, source_surface);
+    get_safely(vars, cmd_crop_image, 2, SDL_Rect, rect);
+
+    SDL_Surface *result = crop_surface(source_surface, *rect);
+
+    put_entry(resources, command.words[3], ptr_to_str(result));
+
     return SUCCESS;
 }
 
 int cmd_render_image(splitted_words command, hash_table **vars, hash_table **resources)
 {
     SDL_Renderer *r = str_to_ptr(get_entry(vars, "__internal__renderer__ptr__"));
-    SDL_Surface *s = str_to_ptr(get_entry(resources, command.words[1]));
+    get_safely(resources, cmd_render_image, 1, SDL_Surface, s);
     SDL_Texture *t = SDL_CreateTextureFromSurface(r, s);
 
     SDL_Rect *src_ptr = (SDL_Rect *)str_to_ptr(get_entry(vars, command.words[2]));
@@ -233,9 +261,11 @@ int cmd_render_image(splitted_words command, hash_table **vars, hash_table **res
 
 int cmd_render_point(splitted_words command, hash_table **vars, hash_table **resources)
 {
-    SDL_Point p = *(SDL_Point *)str_to_ptr(get_entry(vars, command.words[1]));
+    // SDL_Point p = *(SDL_Point *)str_to_ptr(get_entry(vars, command.words[1]));
+    get_safely(vars, cmd_render_point, 1, SDL_Point, p);
+
     SDL_RenderDrawPoint(str_to_ptr(get_entry(vars, "__internal__renderer__ptr__")),
-                        p.x, p.y);
+                        p->x, p->y);
     return SUCCESS;
 }
 
