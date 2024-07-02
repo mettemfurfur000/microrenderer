@@ -1,5 +1,12 @@
-CFLAGS += -g -Wall
-LDFLAGS += -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lm
+CFLAGS += -O0 -Wall -g
+LDFLAGS += -lm
+
+ifeq ($(OS),Windows_NT)
+        CFLAGS += -IC:/msys64/mingw64/include/SDL2 -Dmain=SDL_main
+        LDFLAGS += -LC:/msys64/mingw64/lib -lmingw32 -lws2_32      
+endif
+
+LDFLAGS += -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf
 
 sources := $(shell cd src;echo *.c)
 objects := $(patsubst %.c,obj/%.o,$(sources))
@@ -19,7 +26,8 @@ obj/main.o: src/main.c
 $(executable): $(objects)
 	gcc $(CFLAGS) -o build/$@ $^ $(LDFLAGS)
 	cp -r example_files/* build
-	
+
+.PHONY: clean
 clean:
 	rm -rf obj/*
 	rm -rf build/*

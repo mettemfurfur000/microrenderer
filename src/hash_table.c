@@ -29,7 +29,7 @@ void copy_key(hash_table *node, char *key)
 	if (node->key)
 		free(node->key);
 
-	node->key = (char *)calloc(strlen(key), 1);
+	node->key = (char *)calloc(strlen(key) + 1, 1);
 	strcpy(node->key, key);
 }
 
@@ -38,7 +38,7 @@ void copy_value(hash_table *node, char *value)
 	if (node->value)
 		free(node->value);
 
-	node->value = (char *)calloc(strlen(value), 1);
+	node->value = (char *)calloc(strlen(value) + 1, 1);
 	strcpy(node->value, value);
 }
 
@@ -47,13 +47,13 @@ void copy_all(hash_table *node, char *key, char *value)
 	if (node->key)
 		free(node->key);
 
-	node->key = (char *)calloc(strlen(key), 1);
+	node->key = (char *)calloc(strlen(key) + 1, 1);
 	strcpy(node->key, key);
 
 	if (node->value)
 		free(node->value);
 
-	node->value = (char *)calloc(strlen(value), 1);
+	node->value = (char *)calloc(strlen(value) + 1, 1);
 	strcpy(node->value, value);
 }
 
